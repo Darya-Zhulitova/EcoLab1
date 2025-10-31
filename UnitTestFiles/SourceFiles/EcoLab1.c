@@ -26,11 +26,8 @@
 #include "IdEcoLab1.h"
 #include <time.h>
 
-int __cdecl comparator(const void* a, const void* b) {
-    int32_t int_a = *((const int32_t*)a);
-    int32_t int_b = *((const int32_t*)b);
-    return (int_a > int_b) - (int_a < int_b);
-}
+#include "IEcoCalculatorY.h"
+#include "IEcoCalculatorX.h"
 
 /*
  *
@@ -51,13 +48,6 @@ int16_t ECOCALLMETHOD EcoMain(IEcoUnknown* pIUnk) {
     IEcoInterfaceBus1* pIBus = 0;
     /* Указатель на интерфейс работы с памятью */
     IEcoMemoryAllocator1* pIMem = 0;
-
-    int32_t* combArray = 0;
-    int32_t* qsortArray = 0;
-    uint32_t n = 0;
-    uint32_t i = 0;
-    uint32_t k = 0;
-    clock_t combBegin, combEnd, qsortBegin, qsortEnd;
 
     /* Указатель на тестируемый интерфейс */
     IEcoLab1* pIEcoLab1 = 0;
@@ -101,35 +91,75 @@ int16_t ECOCALLMETHOD EcoMain(IEcoUnknown* pIUnk) {
         goto Release;
     }
 
-    k = 0;
-    while (k <= 25) {
-        n = (uint32_t)pow(2, k);
+	{
+		IEcoCalculatorX* pICalculatorX = 0;
+		IEcoCalculatorY* pICalculatorY = 0;
+		int32_t operation_result = 0;
 
-        combArray = (int32_t*)pIMem->pVTbl->Alloc(pIMem, n * sizeof(int32_t));
-        qsortArray = (int32_t*)pIMem->pVTbl->Alloc(pIMem, n * sizeof(int32_t));
-        for (i = 0; i < n; i++) {
-            int32_t randomValue = rand();
-            combArray[i] = randomValue;
-            qsortArray[i] = randomValue;
+		printf("Operations test:\n");
+		if (pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorX, (void**)&pICalculatorX) == 0 && pICalculatorX != 0) {
+			operation_result = pICalculatorX->pVTbl->Addition(pICalculatorX, 10, 5);
+			printf("    IEcoCalculatorX: 10 + 5 = %d (aggregation)\n", operation_result);
+			operation_result = pICalculatorX->pVTbl->Subtraction(pICalculatorX, 10, 5);
+			printf("    IEcoCalculatorX: 10 - 5 = %d (aggregation)\n", operation_result);
+			pICalculatorX->pVTbl->Release(pICalculatorX);
+			pICalculatorX = 0;
         }
+		if (pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorY, (void**)&pICalculatorY) == 0 && pICalculatorY != 0) {
+			operation_result = pICalculatorY->pVTbl->Multiplication(pICalculatorY, 10, 5);
+			printf("    IEcoCalculatorY: 10 * 5 = %d (inclusion)\n", operation_result);
+			operation_result = pICalculatorY->pVTbl->Division(pICalculatorY, 10, 5);
+			printf("    IEcoCalculatorY: 10 / 5 = %d (inclusion)\n", operation_result);
+			pICalculatorY->pVTbl->Release(pICalculatorY);
+			pICalculatorY = 0;
+		}
 
-        combBegin = clock();
-        pIEcoLab1->pVTbl->CombSort(pIEcoLab1, combArray, n, sizeof(int32_t), comparator);
-        combEnd = clock();
-
-        qsortBegin = clock();
-        qsort(qsortArray, n, sizeof(int32_t), comparator);
-        qsortEnd = clock();
-
-        printf("n=%u; comb_time=%u; qsort_time=%u\n", n, combEnd - combBegin, qsortEnd - qsortBegin);
-
-        /* Освобождение памяти */
-        pIMem->pVTbl->Free(pIMem, combArray);
-        pIMem->pVTbl->Free(pIMem, qsortArray);
-        combArray = 0;
-        qsortArray = 0;
-
-        k++;
+        printf("Test interface accessibility:\n");
+		result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorX, (void**)&pICalculatorX);
+        if (result == 0) {
+            pICalculatorX->pVTbl->Release(pICalculatorX);
+            printf("    IEcoLab1 -> ICalculatorX: Success\n");
+        }
+        result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorY, (void**)&pICalculatorY);
+        if (result == 0) {
+            pICalculatorY->pVTbl->Release(pICalculatorY);
+            printf("    IEcoLab1 -> ICalculatorY: Success\n");
+        }
+        result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoLab1, (void**)&pIEcoLab1);
+        if (result == 0) {
+            pIEcoLab1->pVTbl->Release(pIEcoLab1);
+            printf("    IEcoLab1 -> IEcoLab1: Success\n");
+        }
+        result = pICalculatorX->pVTbl->QueryInterface(pICalculatorX, &IID_IEcoCalculatorY, (void**)&pICalculatorY);
+        if (result == 0) {
+            pICalculatorY->pVTbl->Release(pICalculatorY);
+            printf("    ICalculatorX -> ICalculatorY: Success\n");
+        }
+        result = pICalculatorX->pVTbl->QueryInterface(pICalculatorX, &IID_IEcoLab1, (void**)&pIEcoLab1);
+        if (result == 0) {
+            pIEcoLab1->pVTbl->Release(pIEcoLab1);
+            printf("    ICalculatorX -> IEcoLab1: Success\n");
+        }
+        result = pICalculatorX->pVTbl->QueryInterface(pICalculatorX, &IID_IEcoCalculatorX, (void**)&pICalculatorX);
+        if (result == 0) {
+            pICalculatorX->pVTbl->Release(pICalculatorX);
+            printf("    ICalculatorX -> ICalculatorX: Success\n");
+        }
+        result = pICalculatorY->pVTbl->QueryInterface(pICalculatorY, &IID_IEcoCalculatorX, (void**)&pICalculatorX);
+        if (result == 0) {
+            pICalculatorX->pVTbl->Release(pICalculatorX);
+            printf("    ICalculatorY -> ICalculatorX: Success\n");
+        }
+        result = pICalculatorY->pVTbl->QueryInterface(pICalculatorY, &IID_IEcoCalculatorY, (void**)&pICalculatorY);
+        if (result == 0) {
+            pICalculatorY->pVTbl->Release(pICalculatorY);
+            printf("    ICalculatorY -> ICalculatorY: Success\n");
+        }
+        result = pICalculatorY->pVTbl->QueryInterface(pICalculatorY, &IID_IEcoLab1, (void**)&pIEcoLab1);
+        if (result == 0) {
+            pIEcoLab1->pVTbl->Release(pIEcoLab1);
+            printf("    ICalculatorY -> IEcoLab1: Success\n");
+        }
     }
     system("Pause");
 

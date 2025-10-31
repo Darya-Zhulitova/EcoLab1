@@ -40,8 +40,13 @@ typedef struct IEcoLab1VTbl {
     uint32_t (ECOCALLMETHOD *AddRef)(/* in */ IEcoLab1Ptr_t me);
     uint32_t (ECOCALLMETHOD *Release)(/* in */ IEcoLab1Ptr_t me);
 
-    /* IEcoLab1 */
-    int16_t (ECOCALLMETHOD *CombSort)(/* in */ IEcoLab1Ptr_t me, void* base, size_t num, size_t size, int (*compar)(const void*, const void*));
+    /* IEcoCalculatorX */
+    int32_t (ECOCALLMETHOD *Add)(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b);
+    int16_t (ECOCALLMETHOD *Sub)(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b);
+    
+    /* IEcoCalculatorY */
+    int32_t (ECOCALLMETHOD *Multiply)(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b);
+    int16_t (ECOCALLMETHOD *Divide)(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b);
 } IEcoLab1VTbl, *IEcoLab1VTblPtr;
 
 interface IEcoLab1 {

@@ -23,12 +23,25 @@
 #include "IEcoLab1.h"
 #include "IEcoSystem1.h"
 #include "IdEcoMemoryManager1.h"
+#include "IEcoCalculatorX.h"
+#include "IEcoCalculatorY.h"
+#include "IdEcoCalculatorA.h"
+#include "IdEcoCalculatorB.h"
+#include "IdEcoCalculatorC.h"
+#include "IdEcoCalculatorD.h"
+#include "IdEcoCalculatorE.h"
+
 
 typedef struct CEcoLab1 {
 
     /* Таблица функций интерфейса IEcoLab1 */
     IEcoLab1VTbl* m_pVTblIEcoLab1;
 
+    /* Таблица функций интерфейса IEcoCalculatorX */
+    IEcoCalculatorXVTbl* m_pVTblIEcoCalculatorX;
+    
+    /* Таблица функций интерфейса IEcoCalculatorY */
+    IEcoCalculatorYVTbl* m_pVTblIEcoCalculatorY;
 
     /* Счетчик ссылок */
     uint32_t m_cRef;
@@ -42,10 +55,16 @@ typedef struct CEcoLab1 {
     /* Данные экземпляра */
     char_t* m_Name;
 
+    IEcoCalculatorX* m_pAggregatedCalculatorX;
+
+    IEcoCalculatorX* m_pContainedCalculatorX_A;  /* Add */
+    IEcoCalculatorX* m_pContainedCalculatorX_C;  /* Sub */
+    IEcoCalculatorY* m_pContainedCalculatorY_D;  /* Mult */
+    IEcoCalculatorY* m_pContainedCalculatorY_E;  /* Div */
 } CEcoLab1, *CEcoLab1Ptr;
 
 /* Инициализация экземпляра */
-int16_t ECOCALLMETHOD initCEcoLab1(/*in*/ struct IEcoLab1* me, /* in */ IEcoUnknown *pIUnkSystem);
+int16_t ECOCALLMETHOD initCEcoLab1(/*in*/ IEcoLab1Ptr_t me, /* in */ struct IEcoUnknown *pIUnkSystem);
 /* Создание экземпляра */
 int16_t ECOCALLMETHOD createCEcoLab1(/* in */ IEcoUnknown* pIUnkSystem, /* in */ IEcoUnknown* pIUnkOuter, /* out */ IEcoLab1** ppIEcoLab1);
 /* Удаление */
